@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,17 +24,17 @@ namespace JiebaNet.Analyser
 
         public void SetNewPath(string newIdfPath)
         {
-            var idfPath = Path.GetFullPath(newIdfPath);
+            string idfPath = Path.GetFullPath(newIdfPath);
             if (IdfFilePath != idfPath)
             {
                 IdfFilePath = idfPath;
-                var lines = File.ReadAllLines(idfPath, Encoding.UTF8);
+                string[] lines = File.ReadAllLines(idfPath, Encoding.UTF8);
                 IdfFreq = new Dictionary<string, double>();
-                foreach (var line in lines)
+                foreach (string line in lines)
                 {
-                    var parts = line.Trim().Split(' ');
-                    var word = parts[0];
-                    var freq = double.Parse(parts[1]);
+                    string[] parts = line.Trim().Split(' ');
+                    string word = parts[0];
+                    double freq = double.Parse(parts[1]);
                     IdfFreq[word] = freq;
                 }
 

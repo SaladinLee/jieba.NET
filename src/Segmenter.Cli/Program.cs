@@ -39,7 +39,7 @@ namespace JiebaNet.Segmenter.Cli
 
         public string GetUsage()
         {
-            var usage = new StringBuilder();
+            StringBuilder usage = new StringBuilder();
             usage.AppendLine();
             usage.AppendLine("jieba.NET options and parameters: ");
             usage.AppendLine();
@@ -76,7 +76,7 @@ namespace JiebaNet.Segmenter.Cli
 
         private static void RunOptions(Options options)
         {
-            var seg = new JiebaSegmenter();
+            JiebaSegmenter seg = new JiebaSegmenter();
 
             if (options.ShowHelp)
             {
@@ -101,18 +101,18 @@ namespace JiebaNet.Segmenter.Cli
 
         private static void SegmentFile(Options options)
         {
-            var result = new List<string>();
+            List<string> result = new List<string>();
 
-            var fileName = Path.GetFullPath(options.FileName);
-            var lines = File.ReadAllLines(fileName);
+            string fileName = Path.GetFullPath(options.FileName);
+            string[] lines = File.ReadAllLines(fileName);
 
             Func<string, bool, bool, IEnumerable<string>> cutMethod = null;
-            var segmenter = new JiebaSegmenter();
+            JiebaSegmenter segmenter = new JiebaSegmenter();
             if (options.POS)
             {
                 cutMethod = (text, cutAll, hmm) =>
                 {
-                    var posSeg = new PosSegmenter(segmenter);
+                    PosSegmenter posSeg = new PosSegmenter(segmenter);
                     return posSeg.Cut(text, hmm).Select(token => string.Format("{0}/{1}", token.Word, token.Flag));
                 };
             }
@@ -121,8 +121,8 @@ namespace JiebaNet.Segmenter.Cli
                 cutMethod = segmenter.Cut;
             }
 
-            var delimiter = string.IsNullOrWhiteSpace(options.Delimiter) ? "/ " : options.Delimiter;
-            foreach (var line in lines)
+            string delimiter = string.IsNullOrWhiteSpace(options.Delimiter) ? "/ " : options.Delimiter;
+            foreach (string line in lines)
             {
                 result.Add(string.Join(delimiter, cutMethod(line, options.CutAll, options.NoHmm)));
             }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -37,30 +37,30 @@ namespace JiebaNet.Segmenter
         {
             try
             {
-                var stopWatch = new Stopwatch();
+                Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
 
-                using (var sr = new StreamReader(MainDict, Encoding.UTF8))
+                using (StreamReader sr = new StreamReader(MainDict, Encoding.UTF8))
                 {
                     string line = null;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        var tokens = line.Split(' ');
+                        string[] tokens = line.Split(' ');
                         if (tokens.Length < 2)
                         {
                             Debug.Fail(string.Format("Invalid line: {0}", line));
                             continue;
                         }
 
-                        var word = tokens[0];
-                        var freq = int.Parse(tokens[1]);
+                        string word = tokens[0];
+                        int freq = int.Parse(tokens[1]);
 
                         Trie[word] = freq;
                         Total += freq;
 
-                        foreach (var ch in Enumerable.Range(0, word.Length))
+                        foreach (int ch in Enumerable.Range(0, word.Length))
                         {
-                            var wfrag = word.Sub(0, ch + 1);
+                            string wfrag = word.Sub(0, ch + 1);
                             if (!Trie.ContainsKey(wfrag))
                             {
                                 Trie[wfrag] = 0;
@@ -104,9 +104,9 @@ namespace JiebaNet.Segmenter
 
             Trie[word] = freq;
             Total += freq;
-            for (var i = 0; i < word.Length; i++)
+            for (int i = 0; i < word.Length; i++)
             {
-                var wfrag = word.Substring(0, i + 1);
+                string wfrag = word.Substring(0, i + 1);
                 if (!Trie.ContainsKey(wfrag))
                 {
                     Trie[wfrag] = 0;
@@ -122,7 +122,7 @@ namespace JiebaNet.Segmenter
         internal int SuggestFreq(string word, IEnumerable<string> segments)
         {
             double freq = 1;
-            foreach (var seg in segments)
+            foreach (string seg in segments)
             {
                 freq *= GetFreqOrDefault(seg) / Total;
             }

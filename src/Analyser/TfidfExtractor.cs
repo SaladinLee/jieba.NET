@@ -44,7 +44,7 @@ namespace JiebaNet.Analyser
 
         private IEnumerable<string> FilterCutByPos(string text, IEnumerable<string> allowPos)
         {
-            var posTags = PosSegmenter.Cut(text).Where(p => allowPos.Contains(p.Flag));
+            IEnumerable<Pair> posTags = PosSegmenter.Cut(text).Where(p => allowPos.Contains(p.Flag));
             return posTags.Select(p => p.Word);
         }
 
@@ -61,18 +61,18 @@ namespace JiebaNet.Analyser
             }
 
             // Calculate TF
-            var freq = new Dictionary<string, double>();
-            foreach (var word in words)
+            Dictionary<string, double> freq = new Dictionary<string, double>();
+            foreach (string word in words)
             {
-                var w = word;
+                string w = word;
                 if (string.IsNullOrEmpty(w) || w.Trim().Length < 2 || StopWords.Contains(w.ToLower()))
                 {
                     continue;
                 }
                 freq[w] = freq.GetDefault(w, 0.0) + 1.0;
             }
-            var total = freq.Values.Sum();
-            foreach (var k in freq.Keys.ToList())
+            double total = freq.Values.Sum();
+            foreach (string k in freq.Keys.ToList())
             {
                 freq[k] *= IdfFreq.GetDefault(k, MedianIdf) / total;
             }
@@ -84,7 +84,7 @@ namespace JiebaNet.Analyser
         {
             if (count <= 0) { count = DefaultWordCount; }
 
-            var freq = GetWordIfidf(text, allowPos);
+            IDictionary<string, double> freq = GetWordIfidf(text, allowPos);
             return freq.OrderByDescending(p => p.Value).Select(p => p.Key).Take(count);
         }
 
@@ -92,7 +92,7 @@ namespace JiebaNet.Analyser
         {
             if (count <= 0) { count = DefaultWordCount; }
 
-            var freq = GetWordIfidf(text, allowPos);
+            IDictionary<string, double> freq = GetWordIfidf(text, allowPos);
             return freq.OrderByDescending(p => p.Value).Select(p => new WordWeightPair()
             {
                 Word = p.Key, Weight = p.Value

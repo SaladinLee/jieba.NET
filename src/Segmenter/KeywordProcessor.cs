@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JiebaNet.Segmenter.Common;
 
@@ -28,7 +28,7 @@ namespace JiebaNet.Segmenter
 
         public void AddKeywords(IEnumerable<string> keywords)
         {
-            foreach (var keyword in keywords)
+            foreach (string keyword in keywords)
             {
                 AddKeyword(keyword);
             }
@@ -45,7 +45,7 @@ namespace JiebaNet.Segmenter
         
         public void RemoveKeywords(IEnumerable<string> keywords)
         {
-            foreach (var keyword in keywords)
+            foreach (string keyword in keywords)
             {
                 RemoveKeyword(keyword);
             }
@@ -58,7 +58,7 @@ namespace JiebaNet.Segmenter
 
         public IEnumerable<TextSpan> ExtractKeywordSpans(string sentence)
         {
-            var keywordsExtracted = new List<TextSpan>();
+            List<TextSpan> keywordsExtracted = new List<TextSpan>();
             if (sentence.IsEmpty())
             {
                 return keywordsExtracted;
@@ -70,14 +70,14 @@ namespace JiebaNet.Segmenter
             }
 
             KeywordTrieNode currentState = KeywordTrie;
-            var seqStartPos = 0;
-            var seqEndPos = 0;
-            var resetCurrentDict = false;
-            var idx = 0;
-            var sentLen = sentence.Length;
+            int seqStartPos = 0;
+            int seqEndPos = 0;
+            bool resetCurrentDict = false;
+            int idx = 0;
+            int sentLen = sentence.Length;
             while (idx < sentLen)
             {
-                var ch = sentence[idx];
+                char ch = sentence[idx];
                 // when reaching a char that denote word end
                 if (!NonWordBoundries.Contains(ch))
                 {
@@ -86,7 +86,7 @@ namespace JiebaNet.Segmenter
                     {
                         //string seqFound = null;
                         string longestFound = null;
-                        var isLongerFound = false;
+                        bool isLongerFound = false;
                         
                         if (currentState.HasValue)
                         {
@@ -98,11 +98,11 @@ namespace JiebaNet.Segmenter
                         // re look for longest seq from this position
                         if (currentState.HasChild(ch))
                         {
-                            var curStateContinued = currentState.GetChild(ch);
-                            var idy = idx + 1;
+                            KeywordTrieNode curStateContinued = currentState.GetChild(ch);
+                            int idy = idx + 1;
                             while (idy < sentLen)
                             {
-                                var innerCh = sentence[idy];
+                                char innerCh = sentence[idy];
                                 if (!NonWordBoundries.Contains(innerCh) && curStateContinued.HasValue)
                                 {
                                     longestFound = curStateContinued.Value;
@@ -158,9 +158,9 @@ namespace JiebaNet.Segmenter
                 {
                     currentState = KeywordTrie;
                     resetCurrentDict = true;
-                    
+
                     // skip to end of word
-                    var idy = idx + 1;
+                    int idy = idx + 1;
                     while (idy < sentLen)
                     {
                         if (!NonWordBoundries.Contains(sentence[idy]))
@@ -177,7 +177,7 @@ namespace JiebaNet.Segmenter
                 {
                     if (currentState.HasValue)
                     {
-                        var seqFound = currentState.Value;
+                        string seqFound = currentState.Value;
                         keywordsExtracted.Add(new TextSpan(text: seqFound, start: seqStartPos, end: sentLen));
                     }
                 }

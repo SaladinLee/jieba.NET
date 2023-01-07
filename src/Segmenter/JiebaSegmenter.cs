@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -50,39 +50,39 @@ namespace JiebaNet.Segmenter
         /// <returns></returns>
         public IEnumerable<string> Cut(string text, bool cutAll = false, bool hmm = true)
         {
-            var reHan = cutAll ? RegexChineseCutAll : RegexChineseDefault;
-            var reSkip = cutAll ? RegexSkipCutAll : RegexSkipDefault;
-            var cutMethod = cutAll ? CutAll : hmm ? CutDag : (Func<string, IEnumerable<string>>)CutDagWithoutHmm;
+            Regex reHan = cutAll ? RegexChineseCutAll : RegexChineseDefault;
+            Regex reSkip = cutAll ? RegexSkipCutAll : RegexSkipDefault;
+            Func<string, IEnumerable<string>> cutMethod = cutAll ? CutAll : hmm ? CutDag : (Func<string, IEnumerable<string>>)CutDagWithoutHmm;
             return CutIt(text, cutMethod, reHan, reSkip, cutAll);
         }
         
         public IEnumerable<IEnumerable<string>> CutInParallel(IEnumerable<string> texts, bool cutAll = false, bool hmm = true)
         {
-            var reHan = cutAll ? RegexChineseCutAll : RegexChineseDefault;
-            var reSkip = cutAll ? RegexSkipCutAll : RegexSkipDefault;
-            var cutMethod = cutAll ? CutAll : hmm ? CutDag : (Func<string, IEnumerable<string>>)CutDagWithoutHmm;
+            Regex reHan = cutAll ? RegexChineseCutAll : RegexChineseDefault;
+            Regex reSkip = cutAll ? RegexSkipCutAll : RegexSkipDefault;
+            Func<string, IEnumerable<string>> cutMethod = cutAll ? CutAll : hmm ? CutDag : (Func<string, IEnumerable<string>>)CutDagWithoutHmm;
 
             return texts.AsParallel().AsOrdered().Select(text => CutIt(text, cutMethod, reHan, reSkip, cutAll));
         }
         
         public IEnumerable<string> CutInParallel(string text, bool cutAll = false, bool hmm = true)
         {
-            var lines = text.SplitLines();
+            string[] lines = text.SplitLines();
             return CutInParallel(lines, cutAll, hmm).SelectMany(words => words);
         }
 
         public IEnumerable<string> CutForSearch(string text, bool hmm = true)
         {
-            var result = new List<string>();
+            List<string> result = new List<string>();
 
-            var words = Cut(text, hmm: hmm);
-            foreach (var w in words)
+            IEnumerable<string> words = Cut(text, hmm: hmm);
+            foreach (string w in words)
             {
                 if (w.Length > 2)
                 {
-                    foreach (var i in Enumerable.Range(0, w.Length - 1))
+                    foreach (int i in Enumerable.Range(0, w.Length - 1))
                     {
-                        var gram2 = w.Substring(i, 2);
+                        string gram2 = w.Substring(i, 2);
                         if (WordDict.ContainsWord(gram2))
                         {
                             result.Add(gram2);
@@ -92,9 +92,9 @@ namespace JiebaNet.Segmenter
 
                 if (w.Length > 3)
                 {
-                    foreach (var i in Enumerable.Range(0, w.Length - 2))
+                    foreach (int i in Enumerable.Range(0, w.Length - 2))
                     {
-                        var gram3 = w.Substring(i, 3);
+                        string gram3 = w.Substring(i, 3);
                         if (WordDict.ContainsWord(gram3))
                         {
                             result.Add(gram3);
@@ -115,34 +115,34 @@ namespace JiebaNet.Segmenter
         
         public IEnumerable<string> CutForSearchInParallel(string text, bool hmm = true)
         {
-            var lines = text.SplitLines();
+            string[] lines = text.SplitLines();
             return CutForSearchInParallel(lines, hmm).SelectMany(words => words);
         }
 
         public IEnumerable<Token> Tokenize(string text, TokenizerMode mode = TokenizerMode.Default, bool hmm = true)
         {
-            var result = new List<Token>();
+            List<Token> result = new List<Token>();
 
-            var start = 0;
+            int start = 0;
             if (mode == TokenizerMode.Default)
             {
-                foreach (var w in Cut(text, hmm: hmm))
+                foreach (string w in Cut(text, hmm: hmm))
                 {
-                    var width = w.Length;
+                    int width = w.Length;
                     result.Add(new Token(w, start, start + width));
                     start += width;
                 }
             }
             else
             {
-                foreach (var w in Cut(text, hmm: hmm))
+                foreach (string w in Cut(text, hmm: hmm))
                 {
-                    var width = w.Length;
+                    int width = w.Length;
                     if (width > 2)
                     {
-                        for (var i = 0; i < width - 1; i++)
+                        for (int i = 0; i < width - 1; i++)
                         {
-                            var gram2 = w.Substring(i, 2);
+                            string gram2 = w.Substring(i, 2);
                             if (WordDict.ContainsWord(gram2))
                             {
                                 result.Add(new Token(gram2, start + i, start + i + 2));
@@ -151,9 +151,9 @@ namespace JiebaNet.Segmenter
                     }
                     if (width > 3)
                     {
-                        for (var i = 0; i < width - 2; i++)
+                        for (int i = 0; i < width - 2; i++)
                         {
-                            var gram3 = w.Substring(i, 3);
+                            string gram3 = w.Substring(i, 3);
                             if (WordDict.ContainsWord(gram3))
                             {
                                 result.Add(new Token(gram3, start + i, start + i + 3));
@@ -173,15 +173,15 @@ namespace JiebaNet.Segmenter
 
         internal IDictionary<int, List<int>> GetDag(string sentence)
         {
-            var dag = new Dictionary<int, List<int>>();
-            var trie = WordDict.Trie;
+            Dictionary<int, List<int>> dag = new Dictionary<int, List<int>>();
+            IDictionary<string, int> trie = WordDict.Trie;
 
-            var N = sentence.Length;
-            for (var k = 0; k < sentence.Length; k++)
+            int N = sentence.Length;
+            for (int k = 0; k < sentence.Length; k++)
             {
-                var templist = new List<int>();
-                var i = k;
-                var frag = sentence.Substring(k, 1);
+                List<int> templist = new List<int>();
+                int i = k;
+                string frag = sentence.Substring(k, 1);
                 while (i < N && trie.ContainsKey(frag))
                 {
                     if (trie[frag] > 0)
@@ -208,17 +208,17 @@ namespace JiebaNet.Segmenter
 
         internal IDictionary<int, Pair<int>> Calc(string sentence, IDictionary<int, List<int>> dag)
         {
-            var n = sentence.Length;
-            var route = new Dictionary<int, Pair<int>>();
+            int n = sentence.Length;
+            Dictionary<int, Pair<int>> route = new Dictionary<int, Pair<int>>();
             route[n] = new Pair<int>(0, 0.0);
 
-            var logtotal = Math.Log(WordDict.Total);
-            for (var i = n - 1; i > -1; i--)
+            double logtotal = Math.Log(WordDict.Total);
+            for (int i = n - 1; i > -1; i--)
             {
-                var candidate = new Pair<int>(-1, double.MinValue);
+                Pair<int> candidate = new Pair<int>(-1, double.MinValue);
                 foreach (int x in dag[i])
                 {
-                    var freq = Math.Log(WordDict.GetFreqOrDefault(sentence.Sub(i, x + 1))) - logtotal + route[x + 1].Freq;
+                    double freq = Math.Log(WordDict.GetFreqOrDefault(sentence.Sub(i, x + 1))) - logtotal + route[x + 1].Freq;
                     if (candidate.Freq < freq)
                     {
                         candidate.Freq = freq;
@@ -232,15 +232,15 @@ namespace JiebaNet.Segmenter
 
         internal IEnumerable<string> CutAll(string sentence)
         {
-            var dag = GetDag(sentence);
+            IDictionary<int, List<int>> dag = GetDag(sentence);
 
-            var words = new List<string>();
-            var lastPos = -1;
+            List<string> words = new List<string>();
+            int lastPos = -1;
 
-            foreach (var pair in dag)
+            foreach (KeyValuePair<int, List<int>> pair in dag)
             {
-                var k = pair.Key;
-                var nexts = pair.Value;
+                int k = pair.Key;
+                List<int> nexts = pair.Value;
                 if (nexts.Count == 1 && k > lastPos)
                 {
                     words.Add(sentence.Substring(k, nexts[0] + 1 - k));
@@ -248,7 +248,7 @@ namespace JiebaNet.Segmenter
                 }
                 else
                 {
-                    foreach (var j in nexts)
+                    foreach (int j in nexts)
                     {
                         if (j > k)
                         {
@@ -264,18 +264,18 @@ namespace JiebaNet.Segmenter
 
         internal IEnumerable<string> CutDag(string sentence)
         {
-            var dag = GetDag(sentence);
-            var route = Calc(sentence, dag);
+            IDictionary<int, List<int>> dag = GetDag(sentence);
+            IDictionary<int, Pair<int>> route = Calc(sentence, dag);
 
-            var tokens = new List<string>();
+            List<string> tokens = new List<string>();
 
-            var x = 0;
-            var n = sentence.Length;
-            var buf = string.Empty;
+            int x = 0;
+            int n = sentence.Length;
+            string buf = string.Empty;
             while (x < n)
             {
-                var y = route[x].Key + 1;
-                var w = sentence.Substring(x, y - x);
+                int y = route[x].Key + 1;
+                string w = sentence.Substring(x, y - x);
                 if (y - x == 1)
                 {
                     buf += w;
@@ -302,20 +302,20 @@ namespace JiebaNet.Segmenter
 
         internal IEnumerable<string> CutDagWithoutHmm(string sentence)
         {
-            var dag = GetDag(sentence);
-            var route = Calc(sentence, dag);
+            IDictionary<int, List<int>> dag = GetDag(sentence);
+            IDictionary<int, Pair<int>> route = Calc(sentence, dag);
 
-            var words = new List<string>();
+            List<string> words = new List<string>();
 
-            var x = 0;
+            int x = 0;
             string buf = string.Empty;
-            var N = sentence.Length;
+            int N = sentence.Length;
 
-            var y = -1;
+            int y = -1;
             while (x < N)
             {
                 y = route[x].Key + 1;
-                var l_word = sentence.Substring(x, y - x);
+                string l_word = sentence.Substring(x, y - x);
                 if (RegexEnglishChars.IsMatch(l_word) && l_word.Length == 1)
                 {
                     buf += l_word;
@@ -344,9 +344,9 @@ namespace JiebaNet.Segmenter
         internal IEnumerable<string> CutIt(string text, Func<string, IEnumerable<string>> cutMethod,
                                            Regex reHan, Regex reSkip, bool cutAll)
         {
-            var result = new List<string>();
-            var blocks = reHan.Split(text);
-            foreach (var blk in blocks)
+            List<string> result = new List<string>();
+            string[] blocks = reHan.Split(text);
+            foreach (string blk in blocks)
             {
                 if (string.IsNullOrEmpty(blk))
                 {
@@ -355,15 +355,15 @@ namespace JiebaNet.Segmenter
 
                 if (reHan.IsMatch(blk))
                 {
-                    foreach (var word in cutMethod(blk))
+                    foreach (string word in cutMethod(blk))
                     {
                         result.Add(word);
                     }
                 }
                 else
                 {
-                    var tmp = reSkip.Split(blk);
-                    foreach (var x in tmp)
+                    string[] tmp = reSkip.Split(blk);
+                    foreach (string x in tmp)
                     {
                         if (reSkip.IsMatch(x))
                         {
@@ -371,7 +371,7 @@ namespace JiebaNet.Segmenter
                         }
                         else if (!cutAll)
                         {
-                            foreach (var ch in x)
+                            foreach (char ch in x)
                             {
                                 result.Add(ch.ToString());
                             }
@@ -397,7 +397,7 @@ namespace JiebaNet.Segmenter
         /// <param name="userDictFile"></param>
         public void LoadUserDict(string userDictFile)
         {
-            var dictFullPath = Path.GetFullPath(userDictFile);
+            string dictFullPath = Path.GetFullPath(userDictFile);
             Debug.WriteLine("Initializing user dictionary: " + userDictFile);
 
             lock (locker)
@@ -407,22 +407,22 @@ namespace JiebaNet.Segmenter
 
                 try
                 {
-                    var startTime = DateTime.Now.Millisecond;
+                    int startTime = DateTime.Now.Millisecond;
 
-                    var lines = File.ReadAllLines(dictFullPath, Encoding.UTF8);
-                    foreach (var line in lines)
+                    string[] lines = File.ReadAllLines(dictFullPath, Encoding.UTF8);
+                    foreach (string line in lines)
                     {
                         if (string.IsNullOrWhiteSpace(line))
                         {
                             continue;
                         }
 
-                        var tokens = RegexUserDict.Match(line.Trim()).Groups;
-                        var word = tokens["word"].Value.Trim();
-                        var freq = tokens["freq"].Value.Trim();
-                        var tag = tokens["tag"].Value.Trim();
+                        GroupCollection tokens = RegexUserDict.Match(line.Trim()).Groups;
+                        string word = tokens["word"].Value.Trim();
+                        string freq = tokens["freq"].Value.Trim();
+                        string tag = tokens["tag"].Value.Trim();
 
-                        var actualFreq = freq.Length > 0 ? int.Parse(freq) : 0;
+                        int actualFreq = freq.Length > 0 ? int.Parse(freq) : 0;
                         AddWord(word, actualFreq, tag);
                     }
 
@@ -474,7 +474,7 @@ namespace JiebaNet.Segmenter
             {
                 if (!WordDict.ContainsWord(buf))
                 {
-                    var tokens = FinalSeg.Cut(buf);
+                    IEnumerable<string> tokens = FinalSeg.Cut(buf);
                     words.AddRange(tokens);
                 }
                 else

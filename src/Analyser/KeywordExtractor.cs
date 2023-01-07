@@ -18,11 +18,11 @@ namespace JiebaNet.Analyser
         {
             StopWords = new HashSet<string>();
 
-            var path = Path.GetFullPath(stopWordsFile);
+            string path = Path.GetFullPath(stopWordsFile);
             if (File.Exists(path))
             {
-                var lines = File.ReadAllLines(path);
-                foreach (var line in lines)
+                string[] lines = File.ReadAllLines(path);
+                foreach (string line in lines)
                 {
                     StopWords.Add(line.Trim());
                 }
@@ -39,7 +39,7 @@ namespace JiebaNet.Analyser
 
         public void AddStopWords(IEnumerable<string> words)
         {
-            foreach (var word in words)
+            foreach (string word in words)
             {
                 AddStopWord(word);
             }

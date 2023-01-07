@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -39,27 +39,27 @@ namespace JiebaNet.Analyser
 
         public IDictionary<string, double> Rank()
         {
-            var ws = new Dictionary<string, double>();
-            var outSum = new Dictionary<string, double>();
+            Dictionary<string, double> ws = new Dictionary<string, double>();
+            Dictionary<string, double> outSum = new Dictionary<string, double>();
 
             // init scores
-            var count = Graph.Count > 0 ? Graph.Count : 1;
-            var wsdef = 1.0/count;
+            int count = Graph.Count > 0 ? Graph.Count : 1;
+            double wsdef = 1.0/count;
 
-            foreach (var pair in Graph)
+            foreach (KeyValuePair<string, List<Edge>> pair in Graph)
             {
                 ws[pair.Key] = wsdef;
                 outSum[pair.Key] = pair.Value.Sum(e => e.Weight);
             }
 
             // TODO: 10 iterations?
-            var sortedKeys = Graph.Keys.OrderBy(k => k);
-            for (var i = 0; i < 10; i++)
+            IOrderedEnumerable<string> sortedKeys = Graph.Keys.OrderBy(k => k);
+            for (int i = 0; i < 10; i++)
             {
-                foreach (var n in sortedKeys)
+                foreach (string n in sortedKeys)
                 {
-                    var s = 0d;
-                    foreach (var edge in Graph[n])
+                    double s = 0d;
+                    foreach (Edge edge in Graph[n])
                     {
                         s += edge.Weight/outSum[edge.End]*ws[edge.End];
                     }
@@ -67,10 +67,10 @@ namespace JiebaNet.Analyser
                 }
             }
 
-            var minRank = double.MaxValue;
-            var maxRank = double.MinValue;
+            double minRank = double.MaxValue;
+            double maxRank = double.MinValue;
 
-            foreach (var w in ws.Values)
+            foreach (double w in ws.Values)
             {
                 if (w < minRank)
                 {
@@ -82,7 +82,7 @@ namespace JiebaNet.Analyser
                 }
             }
 
-            foreach (var pair in ws.ToList())
+            foreach (KeyValuePair<string, double> pair in ws.ToList())
             {
                 ws[pair.Key] = (pair.Value - minRank/10.0)/(maxRank - minRank/10.0);
             }

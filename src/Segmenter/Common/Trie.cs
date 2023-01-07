@@ -32,13 +32,13 @@ namespace JiebaNet.Segmenter.Common
                 Children = new Dictionary<char, TrieNode>();
             }
 
-            var c = s[pos];
+            char c = s[pos];
             if (!Children.ContainsKey(c))
             {
                 Children[c] = new TrieNode(c);
             }
 
-            var curNode = Children[c];
+            TrieNode curNode = Children[c];
             if (pos == s.Length - 1)
             {
                 curNode.Frequency += freq;
@@ -100,7 +100,7 @@ namespace JiebaNet.Segmenter.Common
         {
             CheckWord(word);
 
-            var node = Root.Search(word.Trim(), 0);
+            TrieNode node = Root.Search(word.Trim(), 0);
             return node.IsNotNull() && node.Frequency > 0;
         }
 
@@ -108,7 +108,7 @@ namespace JiebaNet.Segmenter.Common
         {
             CheckWord(word);
 
-            var node = Root.Search(word.Trim(), 0);
+            TrieNode node = Root.Search(word.Trim(), 0);
             return node.IsNotNull();
         }
 
@@ -116,7 +116,7 @@ namespace JiebaNet.Segmenter.Common
         {
             CheckWord(word);
 
-            var node = Root.Search(word.Trim(), 0);
+            TrieNode node = Root.Search(word.Trim(), 0);
             return node.IsNull() ? 0 : node.Frequency;
         }
 
@@ -124,7 +124,7 @@ namespace JiebaNet.Segmenter.Common
         {
             CheckWord(word);
 
-            var i = Root.Insert(word.Trim(), 0, freq);
+            int i = Root.Insert(word.Trim(), 0, freq);
             if (i > 0)
             {
                 TotalFrequency += freq;
@@ -136,7 +136,7 @@ namespace JiebaNet.Segmenter.Common
 
         public IEnumerable<char> ChildChars(string prefix)
         {
-            var node = Root.Search(prefix.Trim(), 0);
+            TrieNode node = Root.Search(prefix.Trim(), 0);
             return node.IsNull() || node.Children.IsNull() ? null : node.Children.Select(p => p.Key);
         }
 

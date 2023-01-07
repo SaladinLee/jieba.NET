@@ -76,7 +76,7 @@ namespace JiebaNet.Segmenter.Common
 
         public IEnumerable<KeyValuePair<T, int>> MostCommon(int n = -1)
         {
-            var pairs = data.Where(pair => pair.Value > 0).OrderByDescending(pair => pair.Value);
+            IOrderedEnumerable<KeyValuePair<T, int>> pairs = data.Where(pair => pair.Value > 0).OrderByDescending(pair => pair.Value);
             return n < 0 ? pairs : pairs.Take(n);
         }
 
@@ -102,16 +102,16 @@ namespace JiebaNet.Segmenter.Common
 
         public ICounter<T> Union(ICounter<T> other)
         {
-            var result = new Counter<T>();
-            foreach (var pair in data)
+            Counter<T> result = new Counter<T>();
+            foreach (KeyValuePair<T, int> pair in data)
             {
-                var count = pair.Value;
-                var otherCount = other[pair.Key];
-                var newCount = count < otherCount ? otherCount : count;
+                int count = pair.Value;
+                int otherCount = other[pair.Key];
+                int newCount = count < otherCount ? otherCount : count;
                 result[pair.Key] = newCount;
             }
 
-            foreach (var pair in other.Elements)
+            foreach (KeyValuePair<T, int> pair in other.Elements)
             {
                 if (!Contains(pair.Key))
                 {
@@ -143,7 +143,7 @@ namespace JiebaNet.Segmenter.Common
 
         private void CountItems(IEnumerable<T> items)
         {
-            foreach (var item in items)
+            foreach (T item in items)
             {
                 data[item] = data.GetDefault(item, 0) + 1;
             }
@@ -151,7 +151,7 @@ namespace JiebaNet.Segmenter.Common
 
         private void CountPairs(IEnumerable<KeyValuePair<T, int>> pairs)
         {
-            foreach (var pair in pairs)
+            foreach (KeyValuePair<T, int> pair in pairs)
             {
                 this[pair.Key] += pair.Value;
             }
@@ -159,7 +159,7 @@ namespace JiebaNet.Segmenter.Common
 
         private void SubtractItems(IEnumerable<T> items)
         {
-            foreach (var item in items)
+            foreach (T item in items)
             {
                 data[item] = data.GetDefault(item, 0) - 1;
             }
@@ -167,7 +167,7 @@ namespace JiebaNet.Segmenter.Common
 
         private void SubtractPairs(IEnumerable<KeyValuePair<T, int>> pairs)
         {
-            foreach (var pair in pairs)
+            foreach (KeyValuePair<T, int> pair in pairs)
             {
                 this[pair.Key] -= pair.Value;
             }

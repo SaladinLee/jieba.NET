@@ -62,7 +62,7 @@ namespace JiebaNet.Segmenter.Common
 
         public static void Update<TKey, TValue>(this IDictionary<TKey, TValue> dict, IDictionary<TKey, TValue> other)
         {
-            foreach (var key in other.Keys)
+            foreach (TKey key in other.Keys)
             {
                 dict[key] = other[key];
             }
@@ -115,7 +115,7 @@ namespace JiebaNet.Segmenter.Common
 
         public static IEnumerable<string> SubGroupValues(this GroupCollection groups)
         {
-            var result = from Group g in groups
+            IEnumerable<string> result = from Group g in groups
                          select g.Value;
             return result.Skip(1);
         }

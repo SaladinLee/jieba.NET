@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -44,18 +44,18 @@ namespace JiebaNet.Segmenter.PosSeg
             try
             {
                 _wordTagTab = new Dictionary<string, string>();
-                var lines = File.ReadAllLines(ConfigManager.MainDictFile, Encoding.UTF8);
-                foreach (var line in lines)
+                string[] lines = File.ReadAllLines(ConfigManager.MainDictFile, Encoding.UTF8);
+                foreach (string line in lines)
                 {
-                    var tokens = line.Split(' ');
+                    string[] tokens = line.Split(' ');
                     if (tokens.Length < 2)
                     {
                         Debug.Fail(string.Format("Invalid line: {0}", line));
                         continue;
                     }
 
-                    var word = tokens[0];
-                    var tag = tokens[2];
+                    string word = tokens[0];
+                    string tag = tokens[2];
 
                     _wordTagTab[word] = tag;
                 }
@@ -103,7 +103,7 @@ namespace JiebaNet.Segmenter.PosSeg
         
         public IEnumerable<IEnumerable<Pair>> CutInParallel(string text, bool hmm = true)
         {
-            var lines = text.SplitLines();
+            string[] lines = text.SplitLines();
             return CutInParallel(lines, hmm);
         }
 
@@ -113,7 +113,7 @@ namespace JiebaNet.Segmenter.PosSeg
         {
             CheckNewUserWordTags();
 
-            var blocks = RegexChineseInternal.Split(text);
+            string[] blocks = RegexChineseInternal.Split(text);
             Func<string, IEnumerable<Pair>> cutMethod = null;
             if (hmm)
             {
@@ -124,8 +124,8 @@ namespace JiebaNet.Segmenter.PosSeg
                 cutMethod = CutDagWithoutHmm;
             }
 
-            var tokens = new List<Pair>();
-            foreach (var blk in blocks)
+            List<Pair> tokens = new List<Pair>();
+            foreach (string blk in blocks)
             {
                 if (RegexChineseInternal.IsMatch(blk))
                 {
@@ -133,8 +133,8 @@ namespace JiebaNet.Segmenter.PosSeg
                 }
                 else
                 {
-                    var tmp = RegexSkipInternal.Split(blk);
-                    foreach (var x in tmp)
+                    string[] tmp = RegexSkipInternal.Split(blk);
+                    foreach (string x in tmp)
                     {
                         if (RegexSkipInternal.IsMatch(x))
                         {
@@ -142,10 +142,10 @@ namespace JiebaNet.Segmenter.PosSeg
                         }
                         else
                         {
-                            foreach (var xx in x)
+                            foreach (char xx in x)
                             {
                                 // TODO: each char?
-                                var xxs = xx.ToString();
+                                string xxs = xx.ToString();
                                 if (RegexNumbers.IsMatch(xxs))
                                 {
                                     tokens.Add(new Pair(xxs, "m"));
@@ -169,18 +169,18 @@ namespace JiebaNet.Segmenter.PosSeg
 
         internal IEnumerable<Pair> CutDag(string sentence)
         {
-            var dag = _segmenter.GetDag(sentence);
-            var route = _segmenter.Calc(sentence, dag);
+            IDictionary<int, List<int>> dag = _segmenter.GetDag(sentence);
+            IDictionary<int, Pair<int>> route = _segmenter.Calc(sentence, dag);
 
-            var tokens = new List<Pair>();
+            List<Pair> tokens = new List<Pair>();
 
-            var x = 0;
-            var n = sentence.Length;
-            var buf = string.Empty;
+            int x = 0;
+            int n = sentence.Length;
+            string buf = string.Empty;
             while (x < n)
             {
-                var y = route[x].Key + 1;
-                var w = sentence.Substring(x, y - x);
+                int y = route[x].Key + 1;
+                string w = sentence.Substring(x, y - x);
                 if (y - x == 1)
                 {
                     buf += w;
@@ -207,20 +207,20 @@ namespace JiebaNet.Segmenter.PosSeg
 
         internal IEnumerable<Pair> CutDagWithoutHmm(string sentence)
         {
-            var dag = _segmenter.GetDag(sentence);
-            var route = _segmenter.Calc(sentence, dag);
+            IDictionary<int, List<int>> dag = _segmenter.GetDag(sentence);
+            IDictionary<int, Pair<int>> route = _segmenter.Calc(sentence, dag);
 
-            var tokens = new List<Pair>();
+            List<Pair> tokens = new List<Pair>();
 
-            var x = 0;
-            var buf = string.Empty;
-            var n = sentence.Length;
+            int x = 0;
+            string buf = string.Empty;
+            int n = sentence.Length;
 
-            var y = -1;
+            int y = -1;
             while (x < n)
             {
                 y = route[x].Key + 1;
-                var w = sentence.Substring(x, y - x);
+                string w = sentence.Substring(x, y - x);
                 // TODO: char or word?
                 if (RegexEnglishChar.IsMatch(w))
                 {
@@ -249,9 +249,9 @@ namespace JiebaNet.Segmenter.PosSeg
 
         internal IEnumerable<Pair> CutDetail(string text)
         {
-            var tokens = new List<Pair>();
-            var blocks = RegexChineseDetail.Split(text);
-            foreach (var blk in blocks)
+            List<Pair> tokens = new List<Pair>();
+            string[] blocks = RegexChineseDetail.Split(text);
+            foreach (string blk in blocks)
             {
                 if (RegexChineseDetail.IsMatch(blk))
                 {
@@ -259,8 +259,8 @@ namespace JiebaNet.Segmenter.PosSeg
                 }
                 else
                 {
-                    var tmp = RegexSkipDetail.Split(blk);
-                    foreach (var x in tmp)
+                    string[] tmp = RegexSkipDetail.Split(blk);
+                    foreach (string x in tmp)
                     {
                         if (!string.IsNullOrWhiteSpace(x))
                         {
@@ -298,7 +298,7 @@ namespace JiebaNet.Segmenter.PosSeg
             {
                 if (!WordDict.ContainsWord(buf))
                 {
-                    var tokens = CutDetail(buf);
+                    IEnumerable<Pair> tokens = CutDetail(buf);
                     words.AddRange(tokens);
                 }
                 else

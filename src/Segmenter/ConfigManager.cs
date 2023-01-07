@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Configuration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.IO;
 using JiebaNet.Segmenter.Common;
 
@@ -9,16 +10,18 @@ namespace JiebaNet.Segmenter
     {
         private static string _configFileBaseDir = null;
 
+        static private readonly IConfiguration Configuration;
+
         public static string ConfigFileBaseDir
         {
             get
             {
                 if (_configFileBaseDir.IsNull())
                 {
-                    var configFileDir = ConfigurationManager.AppSettings["JiebaConfigFileDir"] ?? "Resources";
+                    string configFileDir = Configuration["JiebaConfigFileDir"] ?? "Resources";
                     if (!Path.IsPathRooted(configFileDir))
                     {
-                        var domainDir = AppDomain.CurrentDomain.BaseDirectory;
+                        string domainDir = AppDomain.CurrentDomain.BaseDirectory;
                         configFileDir = Path.GetFullPath(Path.Combine(domainDir, configFileDir));
                     }
                     _configFileBaseDir = configFileDir;

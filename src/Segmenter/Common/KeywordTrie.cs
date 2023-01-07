@@ -21,7 +21,7 @@ namespace JiebaNet.Segmenter.Common
 
         public KeywordTrieNode AddChild(char ch, string value = null, bool overwrite = false)
         {
-            var child = _children.GetOrDefault(ch);
+            KeywordTrieNode child = _children.GetOrDefault(ch);
             if (child.IsNull())
             {
                 child = new KeywordTrieNode(value);
@@ -37,7 +37,7 @@ namespace JiebaNet.Segmenter.Common
         
         public KeywordTrieNode GetChild(char ch)
         {
-            var child = _children.GetOrDefault(ch);
+            KeywordTrieNode child = _children.GetOrDefault(ch);
             return child;
         }
 
@@ -78,7 +78,7 @@ namespace JiebaNet.Segmenter.Common
         private string GetItem(string key)
         {
             KeywordTrieNode state = this;
-            foreach (var ch in key)
+            foreach (char ch in key)
             {
                 state = state.GetChild(ch);
                 if (state.IsNull())
@@ -101,7 +101,7 @@ namespace JiebaNet.Segmenter.Common
                 }
                 else
                 {
-                    var child = state.GetChild(key[i]);
+                    KeywordTrieNode child = state.GetChild(key[i]);
                     state = state.AddChild(key[i], value, true);
                     if (child.IsNull() || !child.HasValue)
                     {
@@ -174,7 +174,7 @@ namespace JiebaNet.Segmenter.Common
 
         public override int GetHashCode()
         {
-            var hash = 13;
+            int hash = 13;
             hash = (hash * 7) + Text.GetHashCode();
             hash = (hash * 7) + Start.GetHashCode();
             hash = (hash * 7) + End.GetHashCode();
